@@ -1,0 +1,22 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang = "ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Питомец рядом</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Питомец рядом</h1>
+    <img src ="{% static 'images/cat_dog.jpg' %}" alt="Фотография кошки и собаки">
+    <p>
+        Помогаем найти дорогу домой потерявшимся питомцам.
+    </p>
+    <div class = "buttons">
+        <button class = "button_1">Потерял питомца</button>
+        <button class = "button_2">Нашел питомца</button>
+    </div>
+
+</body>
+</html>
