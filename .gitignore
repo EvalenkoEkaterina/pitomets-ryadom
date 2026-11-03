@@ -5,3 +5,11 @@ db.sqlite3
 db.sqlite3-*
 .env
 .DS_Store
+# React / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Локальные настройки; примеры можно сохранять
+.env.*
+!.env.example
