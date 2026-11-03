@@ -1,0 +1,43 @@
+body{
+    text-align: center;
+}
+h1 {
+    color:darkgreen;
+    font-size: 48px;
+    padding:12px 50px;
+    text-align: center;
+}
+img {
+    width: 600px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+p {
+    color:green;
+    margin: 40px;
+    font-size: 20px;
+    text-align: center;
+
+
+}
+.buttons{
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+.button_1 {
+    padding: 12px 50px;
+    font-size: 30px;
+    background-color: darkgreen;
+    color:white;
+    border-radius: 8px;
+}
+
+.button_2 {
+    padding: 12px 50px;
+    font-size: 30px;
+    background-color: white;
+    color:darkgreen;
+    border-radius: 8px;
+}
