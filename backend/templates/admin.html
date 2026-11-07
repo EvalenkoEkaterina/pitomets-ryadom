@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админка «Питомец рядом»</title>
+   
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark px-4">
+        <span class="navbar-brand mb-0 h1">🐾 Питомец рядом (Админка)</span>
+        <div class="d-flex gap-2">
+            <a href="/docs" class="btn btn-outline-light btn-sm" target="_blank">Перейти в Swagger API</a>
+            <a href="/logout" class="btn btn-danger btn-sm">Выйти</a>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Заявки о потерянных питомцах</h4>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Кличка</th>
+                            <th>Вид</th>
+                            <th>Улица</th>
+                            <th>Статус</th>
+                            <th class="text-end pe-4">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pet in pets %}
+                        <tr>
+                            <td>{{ pet.id }}</td>
+                            <td class="fw-bold">{{ pet.name }}</td>
+                            <td>
+                                {% if pet.species == 'dog' %}
+                                    <span class="badge bg-primary">Собака</span>
+                                {% elif pet.species == 'cat' %}
+                                    <span class="badge bg-warning text-dark">Кошка</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ pet.species }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ pet.street }}</td>
+                            <td>
+                                {% if pet.status == 'active' %}
+                                    <span class="badge bg-info text-dark">Ищут</span>
+                                {% else %}
+                                    <span class="badge bg-success">Найден</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <form action="/admin/found/{{ pet.id }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success" {% if pet.status == 'found' %}disabled{% endif %}>
+                                        Найден
+                                    </button>
+                                </form>
+                                <form action="/admin/delete/{{ pet.id }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if not pets %}
+        <div class="alert alert-info mt-4 text-center">
+               Данных нет. Добавте питомцев через <a href="/docs" class="alert-link">Swagger API</a>.
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
