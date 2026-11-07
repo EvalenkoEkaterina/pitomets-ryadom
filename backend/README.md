@@ -9,3 +9,4 @@
 2. Создайте файл `.env` (по примеру `.env.example`) и впишите свои данные от PostgreSQL.
 3. Запустите сервер: `uvicorn main:app --reload`
 4. Документация (Swagger): `http://127.0.0.1:8000/docs`
+
