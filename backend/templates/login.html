@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему | Питомец рядом</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(-45deg, #1e3c72, #2a5298, #6a11cb, #2575fc);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px 40px 30px 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            color: white;
+            position: relative;
+            
+
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            transform-style: preserve-3d;
+        }
+
+
+        .glass-card:hover {
+            transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.02);
+            box-shadow: -10px 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        .shake-error {
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+        }
+
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+  
+        .fox-wrapper {
+            opacity: 0;
+            animation: slideUp 0.6s 0.1s forwards;
+        }
+
+        .fox-emoji {
+            font-size: 85px;
+            line-height: 1;
+            text-align: center;
+            margin: -95px auto 15px auto;
+            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.4));
+            animation: float 3s 0.7s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .glass-card h2 {
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-size: 1.5rem;
+            opacity: 0;
+            animation: slideUp 0.6s 0.2s forwards;
+        }
+
+        .error-alert {
+            background: rgba(220, 53, 69, 0.8);
+            border: 1px solid rgba(255, 100, 100, 0.5);
+            color: white;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            animation: slideUp 0.6s 0.25s forwards;
+        }
+
+
+        .form-group-login { opacity: 0; animation: slideUp 0.6s 0.3s forwards; }
+        .form-group-password { opacity: 0; animation: slideUp 0.6s 0.4s forwards; }
+        .btn-container { opacity: 0; animation: slideUp 0.6s 0.5s forwards; }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 10px;
+            padding-left: 45px;
+            transition: all 0.3s ease;
+        }
+
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 154, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 154, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 154, 0, 0); }
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ff9a00;
+            color: white;
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+        .input-group-text {
+            background: transparent;
+            border: none;
+            position: absolute;
+            z-index: 10;
+            color: rgba(255, 255, 255, 0.7);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+        }
+
+        .form-label { font-weight: 500; font-size: 0.9rem; }
+
+
+        .btn-login {
+            background: linear-gradient(135deg, #ff9a00 0%, #ff5e00 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #b33a00, 0 10px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(0);
+            transition: all 0.1s ease; 
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #ffa826 0%, #ff7022 100%);
+            box-shadow: 0 8px 0 #b33a00, 0 12px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-login:active {
+            box-shadow: 0 2px 0 #b33a00, 0 4px 5px rgba(0, 0, 0, 0.2);
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="glass-card {% if error %}shake-error{% endif %}">
+        
+        <div class="fox-wrapper">
+            <div class="fox-emoji">🦊</div>
+        </div>
+
+        <h2><i class="bi bi-shield-lock-fill"></i> Админ-панель</h2>
+        
+
+        {% if error %}
+        <div class="alert error-alert text-center py-2 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login">
+            <div class="mb-4 position-relative form-group-login">
+                <label for="username" class="form-label">Логин</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Введите логин" required>
+                </div>
+            </div>
+
+            <div class="mb-4 position-relative form-group-password">
+                <label for="password" class="form-label">Пароль</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" class="btn btn-login">
+                    Войти <i class="bi bi-arrow-right-short"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
