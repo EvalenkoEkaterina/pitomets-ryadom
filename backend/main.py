@@ -136,8 +136,8 @@ async def get_one_pet(fur_id: int):
 @app.post("/api/pets")
 async def create_fur(fur: FurCreate):
     async with database.pool.acquire() as conn:
-        inf = """INSERT INTO lost_pets (name, species, street, report_type, comment)
-        VALUES ($1, $2, $3, $4, $5)
+        inf = """INSERT INTO lost_pets (name, species, street, report_type, comment, fur.contact_email)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *;"""
         name_val = fur.name if fur.name and fur.name.strip() else None
         
@@ -147,7 +147,8 @@ async def create_fur(fur: FurCreate):
             fur.species, 
             fur.street, 
             fur.report_type,
-            fur.comment,)
+            fur.comment,
+            fur.contact_email,)
     return {"message": "Заявка добавлена", "data": dict(new_pet)}
 
 

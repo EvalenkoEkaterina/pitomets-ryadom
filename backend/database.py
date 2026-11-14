@@ -27,6 +27,7 @@ async def startup():
     report_type VARCHAR(20) DEFAULT 'lost',
     photo_url VARCHAR(255),
     comment VARCHAR(340),
+    contact_email VARCHAR(100) NOT NULL,
     status VARCHAR(20) DEFAULT 'active'
     );""")
 
@@ -45,3 +46,4 @@ class FurCreate(BaseModel):
     street: str = Field(min_length=2, max_length=100)
     report_type: str = Field(default="lost", pattern="^(lost|found)$")
     comment: str = Field(default=None, min_length=1, max_length=340)
+    contact_email: str = Field(min_length=5, max_length=100)
