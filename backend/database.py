@@ -3,10 +3,10 @@ import os
 
 import asyncpg
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
-load_dotenv()  # переменные
+load_dotenv()
 pool = None
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -16,7 +16,6 @@ async def startup():
     Открытие пулла -> подготовка к работе с базой
     """
     global pool
-
     pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
     async with pool.acquire() as conn:
         await conn.execute("""
@@ -25,22 +24,24 @@ async def startup():
     name VARCHAR(100),
     species VARCHAR(50) NOT NULL,
     street VARCHAR(100) NOT NULL,
+    report_type VARCHAR(20) DEFAULT 'lost',
     photo_url VARCHAR(255),
+    comment VARCHAR(340),
     status VARCHAR(20) DEFAULT 'active'
     );""")
 
 
 async def shutdown():
-    """
-    Закрытие пулла, препятствие для утечки данных
-    """
     if pool is not None:
         await pool.close()
     else:
         logger.error("ОШИБКА: Пул соединений не был инициализирован при выключении.")
 
 
+# Валидация длины полей и типа объявления
 class FurCreate(BaseModel):
-    name: str | None = None
-    species: str
-    street: str
+    name: str | None = Field(default=None, max_length=100)
+    species: str = Field(min_length=2, max_length=50)
+    street: str = Field(min_length=2, max_length=100)
+    report_type: str = Field(default="lost", pattern="^(lost|found)$")
+    comment: str = Field(default=None, min_length=1, max_length=340)
