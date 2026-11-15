@@ -121,3 +121,43 @@
   font-size: 18px;
   margin: 30px;
 }
+.pet-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.buttons a {
+  display: inline-block;
+  text-decoration: none;
+  border: 2px solid darkgreen;
+}
+
+.catalog-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.catalog-page h1 {
+  color: darkgreen;
+  text-align: center;
+}
+.catalog-link {
+  display: inline-block;
+  padding: 10px 20px;
+  color: darkgreen;
+  font-size: 20px;
+  text-decoration: none;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.catalog-link:hover {
+  background-color: #e8f2e8;
+}
+
+.catalog-link:focus-visible {
+  outline: 2px solid darkgreen;
+  outline-offset: 3px;
+}
