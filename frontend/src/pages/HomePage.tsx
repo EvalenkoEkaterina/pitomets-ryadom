@@ -1,31 +1,5 @@
+import { Link } from 'react-router-dom'
 import catDogImage from '../assets/cat_dog.jpg'
-import PetList from '../components/PetList'
-import type { Pet } from '../components/PetCard'
-import '../styles/style.css'
-
-const pets: Pet[] = [
-  {
-    id: 1,
-    name: 'Рыжик',
-    city: 'Москва',
-    status: 'Потерялся',
-    description: 'Рыжий кот, пропал возле парка.',
-  },
-  {
-    id: 2,
-    name: 'Бим',
-    city: 'Казань',
-    status: 'Найден',
-    description: 'Найден добрый пёс, ищем хозяев.',
-  },
-  {
-    id: 3,
-    name: 'Муся',
-    city: 'Самара',
-    status: 'Потерялась',
-    description: 'Серая кошка с белыми лапками.',
-  },
-]
 
 function HomePage() {
   return (
@@ -43,19 +17,20 @@ function HomePage() {
       </p>
 
       <div className="buttons">
-        <button className="button_1">Потерял питомца</button>
-        <button className="button_2">Нашел питомца</button>
+        <Link className="button_1" to="/pets?type=found">
+          Потерял питомца
+        </Link>
+
+        <Link className="button_2" to="/pets?type=lost">
+          Нашёл питомца
+        </Link>
       </div>
 
-      <section className="pets-section">
-        <h2>Питомцы рядом</h2>
-
-        <PetList
-          pets={pets}
-          isLoading={false}
-          error={null}
-        />
-      </section>
+      <p>
+        <Link className="catalog-link" to="/pets">
+          Все объявления →
+        </Link>
+      </p>
     </main>
   )
 }
