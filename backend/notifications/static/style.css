@@ -7,3 +7,4 @@ h1 { margin-top: 0; }
 button { padding: 11px 16px; border: 0; border-radius: 9px; color: white; background: #287647; cursor: pointer; }
 button:disabled { opacity: .45; cursor: default; }
 ul { padding-left: 20px; color: #53645a; }
+[hidden] { display: none !important; }

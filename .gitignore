@@ -5,6 +5,7 @@ db.sqlite3
 db.sqlite3-*
 .env
 .DS_Store
+backend/*.pem
 # React / Vite
 node_modules/
 dist/

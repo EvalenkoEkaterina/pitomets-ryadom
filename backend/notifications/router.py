@@ -30,7 +30,7 @@ class UnsubscribeRequest(BaseModel):
     endpoint: str = Field(min_length=1)
 
 
-@router.get("/web-push", include_in_schema=False)
+@router.get("/web-push/", include_in_schema=False)
 async def test_page():
     return FileResponse(STATIC_DIR / "index.html")
 

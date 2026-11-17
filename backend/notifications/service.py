@@ -50,7 +50,7 @@ async def send_test_notification() -> dict:
         {
             "title": "Питомец рядом",
             "body": "Тестовое Web Push уведомление",
-            "url": "/web-push?from=notification",
+            "url": "/web-push/?from=notification",
         }
     )
     report = {"total": len(subscriptions), "sent": 0, "removed": 0, "errors": []}

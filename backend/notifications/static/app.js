@@ -61,8 +61,7 @@ async function refresh() {
 
   const subscription = await (await getRegistration()).pushManager.getSubscription();
   if (subscription) {
-    await save(subscription);
-    setState("Подписан", "Подписка активна и сохранена в PostgreSQL.", {
+    setState("Подписан", "Подписка браузера активна. Можно проверить отправку с сервера.", {
       send: true, unsubscribe: true,
     });
   } else {
