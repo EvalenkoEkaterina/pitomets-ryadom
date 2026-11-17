@@ -13,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 import database
 from database import FurCreate
+from notifications.router import router as notifications_router
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None)
+app.include_router(notifications_router)
 
 
 @app.exception_handler(FastAPIHTTPException)
