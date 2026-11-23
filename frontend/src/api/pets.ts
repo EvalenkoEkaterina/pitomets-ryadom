@@ -2,6 +2,20 @@ import type { Pet } from '../types/pet'
 
 const API_URL = import.meta.env.VITE_API_URL
 
+async function apiError(response: Response): Promise<Error> {
+  try {
+    const body = await response.json()
+    if (typeof body.detail === 'string') return new Error(body.detail)
+    if (Array.isArray(body.detail)) {
+      const details = body.detail.map((item: { loc?: string[]; msg?: string }) =>
+        `${item.loc?.filter((part) => part !== 'body').join('.') || 'Поле'}: ${item.msg || 'неверное значение'}`)
+      return new Error(details.join('; '))
+    }
+  } catch {
+  }
+  return new Error(`Не удалось выполнить запрос (HTTP ${response.status}). Попробуйте ещё раз.`)
+}
+
 export async function getPets(
   reportType: string | null,
   species: string | null
@@ -20,7 +34,7 @@ export async function getPets(
   const response = await fetch(url)
 
   if (!response.ok) {
-    throw new Error('Не удалось загрузить объявления')
+    throw await apiError(response)
   }
 
   const pets: Pet[] = await response.json()
@@ -37,7 +51,7 @@ export async function getPet(id: string): Promise<Pet | null> {
   }
 
   if (!response.ok) {
-    throw new Error('Не удалось загрузить объявление')
+    throw await apiError(response)
   }
 
   const pet: Pet = await response.json()
@@ -63,9 +77,7 @@ export async function createPet(pet: NewPet): Promise<void> {
   })
 
   if (!response.ok) {
-    throw new Error(
-      'Не удалось опубликовать объявление. Проверьте данные и попробуйте снова.'
-    )
+    throw await apiError(response)
   }
 }
 

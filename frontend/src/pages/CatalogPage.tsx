@@ -4,7 +4,7 @@ import { getPets } from '../api/pets'
 import PetList from '../components/PetList'
 import type { Pet } from '../types/pet'
 
-function CatalogPage() {
+function CatalogContent() {
   const [searchParams, setSearchParams] = useSearchParams()
   const reportType = searchParams.get('report_type')
   const speciesParam = searchParams.get('species')
@@ -37,9 +37,9 @@ function CatalogPage() {
           setPets(data)
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!ignore) {
-          setError('Не удалось загрузить объявления. Попробуйте ещё раз.')
+          setError(error instanceof Error ? error.message : 'Не удалось загрузить объявления. Попробуйте ещё раз.')
         }
       })
       .finally(() => {
@@ -113,4 +113,7 @@ function CatalogPage() {
   )
 }
 
-export default CatalogPage
+export default function CatalogPage() {
+  const [params] = useSearchParams()
+  return <CatalogContent key={params.toString()} />
+}

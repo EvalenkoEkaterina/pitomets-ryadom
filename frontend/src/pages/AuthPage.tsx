@@ -1,135 +1,30 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-type AuthPageProps = {
-  mode: 'login' | 'register'
-}
-
-function AuthPage({ mode }: AuthPageProps) {
-  const [email, setEmail] = useState('')
+export default function AuthPage({ mode }: { mode: 'login' | 'register' }) {
+  const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
-  const [passwordRepeat, setPasswordRepeat] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
+  const [repeat, setRepeat] = useState('')
+  const [error, setError] = useState('')
   const isRegister = mode === 'register'
-
-  let title = 'Вход'
-
-  if (isRegister) {
-    title = 'Регистрация'
-  }
+  const title = isRegister ? 'Регистрация' : 'Вход'
 
   function submit() {
-    setError(null)
-
-    if (!email.trim() || !password.trim()) {
-      setError('Укажите почту и пароль.')
-      return
-    }
-
-    if (isRegister && password !== passwordRepeat) {
-      setError('Пароли не совпадают.')
-      return
-    }
-
-    setError(
-      'Подключение к серверу пока не готово. Вход и регистрация недоступны.'
-    )
+    if (!login.trim() || !password.trim()) { setError('Укажите логин и пароль. Одних пробелов недостаточно.'); return }
+    if (login.length > 100 || password.length > 128) { setError('Слишком длинный логин или пароль.'); return }
+    if (isRegister && repeat !== password) { setError('Пароли не совпадают.'); return }
+    setError('Пользовательская авторизация пока не подключена. Данные не отправлены, вход не выполнен.')
   }
 
-  return (
-    <main className="catalog-page">
-      <Link className="catalog-link" to="/">
-        ← На главную
-      </Link>
-
-      <h1>{title}</h1>
-
-      <form
-        className="pet-form"
-        onSubmit={(event) => {
-          event.preventDefault()
-          submit()
-        }}
-        onInvalid={(event) => {
-          const input = event.target
-
-          if (!(input instanceof HTMLInputElement)) {
-            return
-          }
-
-          if (input.validity.valueMissing) {
-            input.setCustomValidity('Заполните это поле.')
-          } else if (input.validity.typeMismatch) {
-            input.setCustomValidity('Введите корректный адрес почты.')
-          }
-        }}
-        onInput={(event) => {
-          const input = event.target
-
-          if (input instanceof HTMLInputElement) {
-            input.setCustomValidity('')
-          }
-        }}
-      >
-        <p>Форма подготовлена. Подключение авторизации ожидается.</p>
-
-        <label>
-          Почта
-          <input
-            required
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="name@example.com"
-          />
-        </label>
-
-        <label>
-          Пароль
-          <input
-            required
-            type="password"
-            autoComplete={isRegister ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </label>
-
-        {isRegister && (
-          <label>
-            Повторите пароль
-            <input
-              required
-              type="password"
-              autoComplete="new-password"
-              value={passwordRepeat}
-              onChange={(event) => setPasswordRepeat(event.target.value)}
-            />
-          </label>
-        )}
-
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
-
-        <button type="submit">{title}</button>
-
-        {isRegister ? (
-          <Link className="catalog-link" to="/login">
-            Уже есть аккаунт? Войти
-          </Link>
-        ) : (
-          <Link className="catalog-link" to="/register">
-            Нет аккаунта? Зарегистрироваться
-          </Link>
-        )}
-      </form>
-    </main>
-  )
+  return <main className="catalog-page"><Link className="catalog-link" to="/">← На главную</Link><h1>{title}</h1>
+    <form className="pet-form" noValidate onSubmit={(event) => { event.preventDefault(); submit() }}>
+      <p className="integration-note">Форма подготовлена. Ожидается подключение пользовательской авторизации.</p>
+      <label>Логин<input required autoComplete="username" maxLength={100} value={login} onChange={(event) => setLogin(event.target.value)} placeholder="Ваш логин"/></label>
+      <label>Пароль<input required type="password" maxLength={128} autoComplete={isRegister ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)}/></label>
+      {isRegister && <label>Повторите пароль<input required type="password" maxLength={128} autoComplete="new-password" value={repeat} onChange={(event) => setRepeat(event.target.value)}/></label>}
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <button type="submit">{isRegister ? 'Зарегистрироваться' : 'Войти'}</button>
+      <Link className="catalog-link" to={isRegister ? '/login' : '/register'}>{isRegister ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться'}</Link>
+    </form>
+  </main>
 }
-
-export default AuthPage

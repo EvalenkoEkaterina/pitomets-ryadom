@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getPet } from '../api/pets'
 import type { Pet } from '../types/pet'
 
-function PetPage() {
+function PetContent() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
 
@@ -29,9 +29,9 @@ function PetPage() {
           setPet(data)
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!ignore) {
-          setError('Не удалось загрузить объявление. Попробуйте ещё раз.')
+          setError(error instanceof Error ? error.message : 'Не удалось загрузить объявление. Попробуйте ещё раз.')
         }
       })
       .finally(() => {
@@ -157,4 +157,7 @@ function PetPage() {
   )
 }
 
-export default PetPage
+export default function PetPage() {
+  const { id } = useParams()
+  return <PetContent key={id} />
+}

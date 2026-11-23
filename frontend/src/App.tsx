@@ -5,11 +5,13 @@ import './styles/style.css'
 import PetPage from './pages/PetPage'
 import PublishPage from './pages/PublishPage'
 import AuthPage from './pages/AuthPage'
+import NotificationsPage from './pages/NotificationsPage'
 
 function App() {
   return (
     <HashRouter>
       <Routes>
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route
           path="/publish/lost"
           element={<PublishPage reportType="lost" />}
