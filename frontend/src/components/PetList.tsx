@@ -1,4 +1,5 @@
-import PetCard, { type Pet } from './PetCard'
+import PetCard from './PetCard'
+import type { Pet } from '../types/pet'
 
 type PetListProps = {
   pets: Pet[]
