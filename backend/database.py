@@ -5,6 +5,8 @@ import asyncpg
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
+from notifications.schema import CREATE_PUSH_SUBSCRIPTIONS_TABLE
+
 logger = logging.getLogger(__name__)
 load_dotenv()  # переменные
 pool = None
@@ -28,6 +30,7 @@ async def startup():
     photo_url VARCHAR(255),
     status VARCHAR(20) DEFAULT 'active'
     );""")
+        await conn.execute(CREATE_PUSH_SUBSCRIPTIONS_TABLE)
 
 
 async def shutdown():

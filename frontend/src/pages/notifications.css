@@ -1,0 +1,11 @@
+/* Только кнопки подписки. Общие стили и карта Лизы остаются прежними. */
+.notifications-page .notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.notifications-page .notification-actions button {
+  flex: 1 1 220px;
+}
