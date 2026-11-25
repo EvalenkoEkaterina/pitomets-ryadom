@@ -1,5 +1,8 @@
 # Web Push через PostgreSQL
 
+Актуальное подключение к странице Лизы, координаты, радиус 1 км и токен проверки:
+[notifications/INTEGRATION.md](notifications/INTEGRATION.md).
+
 Общий backend хранит браузерные подписки в таблице `push_subscriptions`.
 Таблица создаётся в `database.startup()` и не исчезает после перезапуска FastAPI.
 
@@ -57,7 +60,8 @@ uvicorn main:app --reload
 Ручная отправка без страницы:
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/push/send-test
+curl -X POST http://127.0.0.1:8000/api/push/send-test \
+  -H "X-Push-Test-Token: $PUSH_TEST_TOKEN"
 ```
 
 ## API

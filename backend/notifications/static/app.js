@@ -95,7 +95,10 @@ subscribeButton.addEventListener("click", async () => {
 sendButton.addEventListener("click", async () => {
   try {
     setState("Отправка", "Сервер отправляет push…");
-    const result = await requestJson("/api/push/send-test", { method: "POST" });
+    const result = await requestJson("/api/push/send-test", {
+      method: "POST",
+      headers: { "X-Push-Test-Token": document.querySelector("#testToken").value },
+    });
     log(`Отправлено: ${result.sent}; устарело: ${result.removed}`);
     await refresh();
   } catch (error) {
