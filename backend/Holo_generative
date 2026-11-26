@@ -1,0 +1,10 @@
+async def activate_llm_validation(
+    text: str,
+    image_bytes: bytes | None = None,
+    content_type: str | None = None,
+) -> bool:
+    """
+   llm валидация
+    """
+    pass
+    return True
