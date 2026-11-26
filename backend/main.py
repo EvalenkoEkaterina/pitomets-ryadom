@@ -1,8 +1,10 @@
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
+import asyncpg
 import jwt
 from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
@@ -14,40 +16,31 @@ from fastapi.templating import Jinja2Templates
 import database
 from database import FurCreate
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
 
 # --- НАСТРОЙКИ БЕЗОПАСНОСТИ ---
 SECRET_KEY = os.getenv("SECRET_KEY")
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+USERS = {}
 
-MANAGER_USERNAME = os.getenv("MANAGER_USERNAME")
-MANAGER_PASSWORD = os.getenv("MANAGER_PASSWORD")
+admin_user = os.getenv("ADMIN_USERNAME")
+admin_pass = os.getenv("ADMIN_PASSWORD")
+if admin_user and admin_pass:
+    USERS[admin_user] = admin_pass
 
-MANAGER_USERNAME1 = os.getenv("MANAGER_USERNAME1")
-MANAGER_PASSWORD1 = os.getenv("MANAGER_PASSWORD1")
+for key in os.environ:
+    if key.startswith("MANAGER_USERNAME"):
+        suffix = key.replace("MANAGER_USERNAME", "")
+        password_key = f"MANAGER_PASSWORD{suffix}"
+        
+        username = os.getenv(key)
+        password = os.getenv(password_key)
+        
+        if username and password:
+            USERS[username] = password
 
-MANAGER_USERNAME2 = os.getenv("MANAGER_USERNAME2")
-MANAGER_PASSWORD2 = os.getenv("MANAGER_PASSWORD2")
-
-MANAGER_USERNAME3 = os.getenv("MANAGER_USERNAME3")
-MANAGER_PASSWORD3 = os.getenv("MANAGER_PASSWORD3")
-
-if not all(
-    [SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD, MANAGER_USERNAME, MANAGER_PASSWORD]
-):
-    logger.critical("КРИТИЧЕСКАЯ ОШИБКА: Не заданы основные переменные окружения!")
+if not SECRET_KEY or not USERS:
+    logger.critical("КРИТИЧЕСКАЯ ОШИБКА: Не заданы SECRET_KEY или список пользователей!")
     raise SystemExit(1)
-
-# Словарь админов
-USERS = {
-    ADMIN_USERNAME: ADMIN_PASSWORD,
-    MANAGER_USERNAME: MANAGER_PASSWORD,
-    MANAGER_USERNAME1: MANAGER_PASSWORD1,
-    MANAGER_USERNAME2: MANAGER_PASSWORD2,
-    MANAGER_USERNAME3: MANAGER_PASSWORD3,
-}
-USERS = {k: v for k, v in USERS.items() if k and v}
 
 ALGORITHM = "HS256"
 templates = Jinja2Templates(directory="templates")
@@ -55,24 +48,17 @@ templates = Jinja2Templates(directory="templates")
 
 # --- ФУНКЦИИ JWT ---
 def create_access_token(username: str):
-    """
-    Создание JWT-токена
-    """
     expire = datetime.now(timezone.utc) + timedelta(hours=2)
     to_encode = {"sub": username, "exp": expire}
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def verify_admin_token(access_token: str | None = Cookie(default=None)):
-    """
-    Проверка JWT-токена (пускает всех, кто есть в словаре USERS)
-    """
     if not access_token:
         raise HTTPException(status_code=401, detail="Вы не авторизованы")
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-
         if username not in USERS:
             raise HTTPException(status_code=401, detail="Неверный пользователь")
         return username
@@ -82,13 +68,33 @@ def verify_admin_token(access_token: str | None = Cookie(default=None)):
         raise HTTPException(status_code=401, detail="Неверный токен")
 
 
+async def cleanup_found_pets():
+    """
+    автоудаление животных (3 дня)
+    проверка каждый час
+    """
+    while True:
+        try:
+            async with database.pool.acquire() as conn:
+                deleted = await conn.execute("""
+                    DELETE FROM lost_pets
+                    WHERE status = 'found'
+                      AND found_at < NOW() - INTERVAL '3 days';
+                """)
+                if deleted != "DELETE 0":
+                    logger.info(f"Автоочистка БД: удалены старые записи ({deleted})")
+        except asyncpg.PostgresError as e:
+            logger.error(f"Ошибка БД при автоудалении животных: {e}")
+
+        await asyncio.sleep(3600)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Включается при запуске
-    """
     await database.startup()
-    yield  # сервер начал принятие запросов
+    cleanup_task = asyncio.create_task(cleanup_found_pets()) #задача активировать очистку при старте сервера
+    yield
+    cleanup_task.cancel() #Остановка очистки при остановки сервера
     await database.shutdown()
 
 
@@ -97,13 +103,9 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None)
 
 @app.exception_handler(FastAPIHTTPException)
 async def custom_http_exception_handler(request: Request, exc: FastAPIHTTPException):
-    # Редирект на логин при 401 ошибке в браузере
     if exc.status_code == 401 and "text/html" in request.headers.get("accept", ""):
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-    )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 # --- ЗАЩИТА ДОКУМЕНТАЦИИ ---
@@ -128,33 +130,75 @@ app.add_middleware(
 
 # --- API ЭНДПОИНТЫ ---
 @app.get("/api/pets")
-async def get_all_pets():
+async def get_all_pets(
+
+    species: str | None = None, 
+    report_type: str | None = None,
+    status: str = "active"
+):
+    """
+    Выдача только активных животных(вид, тип)
+    """
+    query = "SELECT * FROM lost_pets WHERE 1=1"
+    params = []
+
+    if status != "all":
+        params.append(status.strip().lower())
+        query += f" AND status = ${len(params)}"
+    
+    if species:
+        params.append(species.strip().lower())
+        query += f" AND LOWER(species) = ${len(params)}"
+        
+    if report_type:
+        params.append(report_type.strip().lower())
+        query += f" AND report_type = ${len(params)}"
+        
+    query += " ORDER BY id DESC"
+
     async with database.pool.acquire() as conn:
-        to_get = await conn.fetch("SELECT * FROM lost_pets;")
+        to_get = await conn.fetch(query, *params)
     return [dict(row) for row in to_get]
+
+
+@app.get("/api/species")
+async def get_active_species():
+    """
+    Выдача всех списка видов активных животных в данный момент
+    """
+    async with database.pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT DISTINCT LOWER(species) AS species FROM lost_pets WHERE status = 'active' ORDER BY species;"
+        )
+    return [row["species"] for row in rows]
 
 
 @app.get("/api/pets/{fur_id}")
 async def get_one_pet(fur_id: int):
-    """
-    Получение одного питомца по ID
-    """
     async with database.pool.acquire() as conn:
         pet = await conn.fetchrow("SELECT * FROM lost_pets WHERE id = $1;", fur_id)
-
     if pet is None:
         raise HTTPException(status_code=404, detail="Питомец не найден")
-
     return dict(pet)
 
 
 @app.post("/api/pets")
 async def create_fur(fur: FurCreate):
     async with database.pool.acquire() as conn:
-        inf = """INSERT INTO lost_pets (name, species, street)
-        VALUES ($1, $2, $3)
+        inf = """INSERT INTO lost_pets (name, species, street, report_type, comment, contact_email)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *;"""
-        new_pet = await conn.fetchrow(inf, fur.name, fur.species, fur.street)
+        name_val = fur.name if fur.name and fur.name.strip() else None
+        
+        new_pet = await conn.fetchrow(
+            inf, 
+            name_val, 
+            fur.species, 
+            fur.street, 
+            fur.report_type,
+            fur.comment,
+            fur.contact_email
+        )
     return {"message": "Заявка добавлена", "data": dict(new_pet)}
 
 
@@ -170,21 +214,15 @@ async def dell_fur(fur_id: int, admin: str = Depends(verify_admin_token)):
 
 @app.patch("/api/pets/{fur_id}/found")
 async def mark_as_found(fur_id: int, admin: str = Depends(verify_admin_token)):
+    """
+    Обновление статуса животного на 'found' и фиксация времени находки.
+    """
     async with database.pool.acquire() as conn:
-        inf = """UPDATE lost_pets
-            set status = 'found'
-            WHERE id = $1
-            RETURNING *;
-        """
+        inf = """UPDATE lost_pets SET status = 'found', found_at = NOW() WHERE id = $1 RETURNING *;"""  # Запись времени обновления статуса
         updated_pet = await conn.fetchrow(inf, fur_id)
-
     if updated_pet is None:
-        raise HTTPException(status_code=404, detail="Питомец с таким ID не найден")
-
-    return {
-        "message": "Статус питомца обновлён на found",
-        "data": dict(updated_pet),
-    }
+        raise HTTPException(status_code=404, detail="Животное с таким ID не найдено")
+    return {"message": "Статус животного обновлён на found", "data": dict(updated_pet)}
 
 
 # --- ЭНДПОИНТЫ АВТОРИЗАЦИИ ---
@@ -195,26 +233,16 @@ async def login_page(request: Request):
 
 @app.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-
     if USERS.get(username) == password:
         token = create_access_token(username)
         response = RedirectResponse(url="/admin", status_code=303)
-
-        # БЕЗОПАСНАЯ КУКА
         response.set_cookie(
-            key="access_token",
-            value=token,
-            httponly=True,
-            secure=True,  # Работает только по HTTPS (Render)
-            samesite="lax",
-            max_age=2 * 60 * 60,
+            key="access_token", value=token, httponly=True, secure=True, samesite="lax", max_age=7200
         )
         return response
     else:
         return templates.TemplateResponse(
-            request=request,
-            name="login.html",
-            context={"error": "Неверный логин или пароль"},
+            request=request, name="login.html", context={"error": "Неверный логин или пароль"}
         )
 
 
@@ -230,7 +258,6 @@ async def logout():
 async def admin_panel(request: Request, admin: str = Depends(verify_admin_token)):
     async with database.pool.acquire() as conn:
         inf = await conn.fetch("SELECT * FROM lost_pets ORDER BY id DESC;")
-
     return templates.TemplateResponse(
         request=request, name="admin.html", context={"pets": [dict(row) for row in inf]}
     )
@@ -245,8 +272,9 @@ async def admin_delete_pet(fur_id: int, admin: str = Depends(verify_admin_token)
 
 @app.post("/admin/found/{fur_id}")
 async def admin_found_pet(fur_id: int, admin: str = Depends(verify_admin_token)):
+    """
+    Обновление статуса животного на 'found', фиксация времени нахождения
+    """
     async with database.pool.acquire() as conn:
-        await conn.execute(
-            "UPDATE lost_pets SET status = 'found' WHERE id = $1;", fur_id
-        )
+        await conn.execute("UPDATE lost_pets SET status = 'found', found_at = NOW() WHERE id = $1;", fur_id) #запись времени нахождения
     return RedirectResponse(url="/admin", status_code=303)
