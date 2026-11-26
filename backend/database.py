@@ -3,7 +3,7 @@ import os
 
 import asyncpg
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -19,17 +19,19 @@ async def startup():
     pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
     async with pool.acquire() as conn:
         await conn.execute("""
-    CREATE TABLE IF NOT EXISTS lost_pets (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    species VARCHAR(50) NOT NULL,
-    street VARCHAR(100) NOT NULL,
-    report_type VARCHAR(20) DEFAULT 'lost',
-    photo_url VARCHAR(255),
-    comment VARCHAR(340),
-    contact_email VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'active'
-    );""")
+            CREATE TABLE IF NOT EXISTS lost_pets (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100),
+                species VARCHAR(50) NOT NULL,
+                street VARCHAR(100) NOT NULL,
+                report_type VARCHAR(20) DEFAULT 'lost',
+                photo_url VARCHAR(255),
+                comment VARCHAR(340) NOT NULL,
+                contact_email VARCHAR(100) NOT NULL,
+                status VARCHAR(20) DEFAULT 'active',
+                found_at TIMESTAMPTZ
+            );
+        """)
 
 
 async def shutdown():
@@ -39,11 +41,15 @@ async def shutdown():
         logger.error("ОШИБКА: Пул соединений не был инициализирован при выключении.")
 
 
-# Валидация длины полей и типа объявления
 class FurCreate(BaseModel):
     name: str | None = Field(default=None, max_length=100)
     species: str = Field(min_length=2, max_length=50)
     street: str = Field(min_length=2, max_length=100)
     report_type: str = Field(default="lost", pattern="^(lost|found)$")
-    comment: str = Field(default=None, min_length=1, max_length=340)
+    comment: str = Field(min_length=1, max_length=340)
     contact_email: str = Field(min_length=5, max_length=100)
+
+    @field_validator("species")
+    @classmethod
+    def normalize_species(cls, v: str) -> str:
+        return v.strip().lower()
