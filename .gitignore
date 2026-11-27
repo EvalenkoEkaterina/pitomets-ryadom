@@ -5,6 +5,7 @@ db.sqlite3
 db.sqlite3-*
 .env
 .DS_Store
+backend/*.pem
 # React / Vite
 node_modules/
 dist/
@@ -13,3 +14,11 @@ dist/
 # Локальные настройки; примеры можно сохранять
 .env.*
 !.env.example
+
+# Web Push experiment
+experiments/web-push/.venv/
+experiments/web-push/.env
+experiments/web-push/subscriptions.json
+experiments/web-push/vapid_private.pem
+experiments/web-push/private_key.pem
+experiments/web-push/public_key.pem.vscode/

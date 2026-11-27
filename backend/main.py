@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 
 import database
 from database import FurCreate
+from notifications.router import router as notifications_router
 
 logger = logging.getLogger(__name__) 
 
@@ -92,14 +93,13 @@ async def cleanup_found_pets():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database.startup()
-    cleanup_task = asyncio.create_task(cleanup_found_pets()) #задача активировать очистку при старте сервера
+    
     yield
-    cleanup_task.cancel() #Остановка очистки при остановки сервера
     await database.shutdown()
 
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None)
-
+app.include_router(notifications_router)
 
 @app.exception_handler(FastAPIHTTPException)
 async def custom_http_exception_handler(request: Request, exc: FastAPIHTTPException):

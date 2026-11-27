@@ -10,3 +10,5 @@
 3. Запустите сервер: `uvicorn main:app --reload`
 4. Документация (Swagger): `http://127.0.0.1:8000/docs`
 
+Запуск и проверка Web Push: [WEB_PUSH.md](WEB_PUSH.md).
+

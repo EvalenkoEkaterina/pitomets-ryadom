@@ -2,6 +2,7 @@ import logging
 import os
 
 import asyncpg
+from notifications.schema import CREATE_PUSH_SUBSCRIPTIONS_TABLE
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
@@ -32,7 +33,7 @@ async def startup():
                 found_at TIMESTAMPTZ
             );
         """)
-
+        await conn.execute(CREATE_PUSH_SUBSCRIPTIONS_TABLE)
 
 async def shutdown():
     if pool is not None:

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Push — Питомец рядом</title>
+  <link rel="stylesheet" href="/web-push/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>🐾 Web Push</h1>
+    <p>Отдельная страница проверки общего FastAPI backend и PostgreSQL.</p>
+
+    <p id="openedFromPush" class="notice" hidden>
+      Страница открыта по клику на push-уведомление.
+    </p>
+
+    <section class="status">
+      <strong id="statusBadge">Проверка</strong>
+      <span id="statusText">Проверяем состояние…</span>
+    </section>
+
+    <label>Токен ручной проверки (только для проверяющего)
+      <input id="testToken" type="password" autocomplete="off">
+    </label>
+    <div class="actions">
+      <button id="subscribeButton" disabled>Подписаться</button>
+      <button id="sendButton" disabled>Отправить тестовый push</button>
+      <button id="unsubscribeButton" disabled>Отписаться</button>
+    </div>
+
+    <h2>Журнал</h2>
+    <ul id="log"></ul>
+  </main>
+  <script src="/web-push/app.js"></script>
+</body>
+</html>

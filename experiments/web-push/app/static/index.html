@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Push — Питомец рядом</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="card">
+    <header class="card__header">
+      <div class="logo">🐾</div>
+      <h1>Питомец рядом</h1>
+      <p class="subtitle">Демонстрация push-уведомлений</p>
+    </header>
+
+    <div id="banner" class="banner" hidden>
+      ✅ Вы открыли эту страницу, кликнув по уведомлению.
+    </div>
+
+    <section class="status">
+      <span id="statusBadge" class="badge badge--idle">Проверка</span>
+      <p id="statusText">Проверяем состояние…</p>
+    </section>
+
+    <section class="actions">
+      <button id="subscribeButton" class="btn btn--primary" disabled>
+        🔔 Подписаться на уведомления
+      </button>
+      <button id="sendButton" class="btn btn--accent" disabled>
+        🚀 Отправить тестовое уведомление
+      </button>
+      <button id="unsubscribeButton" class="btn btn--ghost" disabled>
+        Отписаться
+      </button>
+    </section>
+
+    <section class="steps">
+      <h2>Как проверить</h2>
+      <ol>
+        <li>Нажмите «Подписаться» и разрешите уведомления.</li>
+        <li>Нажмите «Отправить тестовое» — push уйдёт с Python-сервера.</li>
+        <li>Кликните по уведомлению — откроется эта страница.</li>
+      </ol>
+    </section>
+
+    <section class="log-section">
+      <h2>Журнал</h2>
+      <ul id="log" class="log"></ul>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
