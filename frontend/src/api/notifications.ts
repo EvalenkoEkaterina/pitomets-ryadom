@@ -1,4 +1,5 @@
 import type { MapPoint } from '../components/LocationPicker'
+import { fetchApi } from './fetchApi'
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -9,7 +10,7 @@ export type NotificationState = {
 }
 
 async function request(path: string, method: string, body?: object) {
-  const response = await fetch(`${API_URL}/api/push/${path}`, {
+  const response = await fetchApi(`${API_URL}/api/push/${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
