@@ -1,17 +1,21 @@
 import type { Pet } from '../types/pet'
+import { fetchApi } from './fetchApi'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 async function apiError(response: Response): Promise<Error> {
-  try {
-    const body = await response.json()
-    if (typeof body.detail === 'string') return new Error(body.detail)
-    if (Array.isArray(body.detail)) {
-      const details = body.detail.map((item: { loc?: string[]; msg?: string }) =>
-        `${item.loc?.filter((part) => part !== 'body').join('.') || 'Поле'}: ${item.msg || 'неверное значение'}`)
-      return new Error(details.join('; '))
-    }
-  } catch {
+  const body = await response.json().catch(() => null)
+  if (typeof body?.detail === 'string' && body.detail.trim()) {
+    return new Error(body.detail)
+  }
+  if (Array.isArray(body?.detail) && body.detail.length > 0) {
+    const details = body.detail.map((item: { loc?: string[]; msg?: string } | null) => {
+      const field = Array.isArray(item?.loc)
+        ? item.loc.filter((part) => part !== 'body').join('.')
+        : ''
+      return `${field || 'Поле'}: ${item?.msg || 'неверное значение'}`
+    })
+    return new Error(details.join('; '))
   }
   return new Error(`Не удалось выполнить запрос (HTTP ${response.status}). Попробуйте ещё раз.`)
 }
@@ -31,7 +35,7 @@ export async function getPets(
   const query = params.toString()
   const url = `${API_URL}/api/pets${query ? `?${query}` : ''}`
 
-  const response = await fetch(url)
+  const response = await fetchApi(url)
 
   if (!response.ok) {
     throw await apiError(response)
@@ -42,7 +46,7 @@ export async function getPets(
   return pets
 }
 export async function getPet(id: string): Promise<Pet | null> {
-  const response = await fetch(
+  const response = await fetchApi(
     `${API_URL}/api/pets/${encodeURIComponent(id)}`
   )
 
@@ -68,7 +72,7 @@ export type NewPet = {
 }
 
 export async function createPet(pet: NewPet): Promise<void> {
-  const response = await fetch(`${API_URL}/api/pets`, {
+  const response = await fetchApi(`${API_URL}/api/pets`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
