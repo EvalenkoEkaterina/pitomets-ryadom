@@ -481,10 +481,30 @@ img { max-width: 100%; }
 .location-map { position: relative; width: 100%; height: 260px; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #e6eee5; cursor: crosshair; }
 .location-map img { position: absolute; width: 256px; height: 256px; max-width: none; user-select: none; }
 .map-crosshair { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #172e22; font-size: 25px; pointer-events: none; }
-.map-pin { position: absolute; transform: translate(-50%, -50%); color: #9d3928; font-size: 28px; text-shadow: 0 0 3px white; pointer-events: none; }
+.map-pin {
+  position: absolute;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  background: #9d3928;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 1px 5px #283a3080;
+  transform: translate(-50%, -85.36%) rotate(-45deg);
+  pointer-events: none;
+}
+.map-pin::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: white;
+}
+.pet-form .map-selection { padding: 8px 12px; background: #f5f3ef; border-radius: 8px; }
+.pet-form .map-selection-picked { background: #e8f3e9; color: #284a37; font-weight: 700; }
 .map-attribution { justify-self: end; font-size: 11px; }
 .map-controls { display: flex; gap: 6px; flex-wrap: wrap; }
-.map-controls button { min-width: 36px; }
+.map-controls button { min-width: 44px; min-height: 44px; }
 .coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 /* Landing page — real sections, text, SVG icons and links. */
